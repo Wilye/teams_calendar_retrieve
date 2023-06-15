@@ -1,24 +1,31 @@
 import requests
 import json
 from datetime import datetime, timedelta
-from msal import PublicClientApplication
+from msal import ConfidentialClientApplication
 
 # your Azure AD registered app's id and secret
 client_id = '7d844cd4-d153-4b2b-a438-8839061e2035'
 client_secret = 'ZYS8Q~g7AnAm~.s1HJDI~4mYH5DFgaD5uZ-WRczJ'
+tenant_id = '5ce202cb-b98c-4a2c-b703-9495a1d48b51'
 
-# Get an access token  
-token_url = 'https://login.microsoftonline.com/{5ce202cb-b98c-4a2c-b703-9495a1d48b51}/oauth2/v2.0/token'
-token_data = {
-    'grant_type': 'client_credentials',
-    'client_id': client_id,
-    'client_secret': client_secret,
-    'scope': 'https://graph.microsoft.com/.default'
-}
+# Create a confidential client application
+app = ConfidentialClientApplication(
+    client_id,
+    authority=f"https://login.microsoftonline.com/{tenant_id}",
+    client_credential=client_secret,
+)
 
-response = requests.post(token_url, data=token_data)
-response.raise_for_status()
-access_token = response.json()['access_token']
+# Redirect the user to the authorization URL
+auth_url = app.get_authorization_request_url(["https://graph.microsoft.com/.default"])
+print(f"Please go to this URL and authorize the app: {auth_url}")
+
+# Get the authorization code from the user
+auth_code = input("Enter the authorization code: ")
+
+# Acquire a token using the authorization code
+result = app.acquire_token_by_authorization_code(auth_code, ["https://graph.microsoft.com/.default"], redirect_uri="https://localhost/")
+#print(result)
+access_token = result['access_token']
 
 # Calculate the start and end of next week
 start_of_next_week = datetime.now() + timedelta(days=-datetime.now().weekday(), weeks=1)
@@ -40,3 +47,6 @@ response.raise_for_status()
 
 # Parse the response
 events = response.json()['value']
+with open("sample.json", "w") as outfile:
+    json.dump(events, outfile, indent = 4)
+#print(events)
