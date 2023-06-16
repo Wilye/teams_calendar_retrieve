@@ -67,7 +67,7 @@ print(f"End of next week: {end_of_next_week}")
 
 # Retrieve calendar events from the Teams channel
 group_id = 'd053caff-d520-4b1b-a294-2743fa694c8a'
-graph_url = f'https://graph.microsoft.com/v1.0/groups/{group_id}/calendar/events'
+graph_url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/calendar/calendarView"
 headers = {
     'Authorization': f'Bearer {access_token}',
     'Prefer': 'outlook.timezone="Central Standard Time"'
