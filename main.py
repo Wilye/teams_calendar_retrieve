@@ -114,12 +114,12 @@ def process_events(events, isPTO):
         print("start in process_events: " + start.strftime("%m/%d/%Y, %H:%M:%S"))
         print("end in process_events: " + end.strftime("%m/%d/%Y, %H:%M:%S"))
 
-        # Only process the event if it starts after or at the start of next week and ends before or at the end of next week
-        if start >= start_of_next_week and end <= end_of_next_week:
+        # Only process the event if it overlaps with or is contained within next week
+        if not (end < start_of_next_week or start > end_of_next_week):
             name = next((attendee['emailAddress']['name'] for attendee in event['attendees'] if attendee['emailAddress']['name'] != "test team"), None) # Need to replace test team with whatever group name JERA Americas_IT has
             
-            start_date = start.date()
-            end_date = end.date()
+            start_date = max(start.date(), start_of_next_week.date()) #  updates the start_date to be the later of the event's start date and the start of next week
+            end_date = min(end.date(), end_of_next_week.date()) # updates the end_date to be the earlier of the event's end date and the end of next week
             start_time = start.time()
             end_time = end.time()
             print("start: " + str(start_date))
