@@ -1,6 +1,6 @@
 import requests
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from msal import ConfidentialClientApplication, SerializableTokenCache
 import pandas as pd
 import smtplib
@@ -61,7 +61,7 @@ access_token = result['access_token']
 
 # Calculate the start and end of next week
 start_of_next_week = (datetime.now() + timedelta(days=-datetime.now().weekday(), weeks=1)).replace(hour=0, minute=0, second=0, microsecond=0)
-end_of_next_week = (start_of_next_week + timedelta(days=6)).replace(hour=23, minute=59, second=59)
+end_of_next_week = (start_of_next_week + timedelta(days=4)).replace(hour=23, minute=59, second=59)
 print(f"Start of next week: {start_of_next_week}")
 print(f"End of next week: {end_of_next_week}")
 
@@ -88,19 +88,28 @@ with open("events.json", "w") as outfile:
 
 # Filter the events and compile into tables
 pto_events = [event for event in events if 'pto' in event['subject'].lower()]
-travel_events = [event for event in events if 'at' in event['subject'].lower()]
+travel_events = [event for event in events if ' at ' in event['subject'].lower()]
 
 # Create lists to store the event data
 pto_data = []
 travel_data = []
+
+def get_last_name(name):
+    """Extract the last name from a full name"""
+    return name.split()[-1]
 
 # The function to process the events
 def process_events(events, isPTO):
     data = []
     for event in events:
         # Convert the start and end times to datetime objects
-        start = datetime.fromisoformat(event['start']['dateTime'].split('.')[0])  # remove timezone info
-        end = datetime.fromisoformat(event['end']['dateTime'].split('.')[0]) - timedelta(seconds=1)  # subtract a second
+        start = datetime.fromisoformat(event['start']['dateTime'].split('.')[0])  # add 'Z' to indicate UTC
+        end = datetime.fromisoformat(event['end']['dateTime'].split('.')[0])  # subtract a second and add 'Z' to indicate UTC
+
+        # Flag
+        # Correct the end time if the event ends exactly at midnight
+        if end.time() == time(0, 0, 0):
+            end -= timedelta(seconds=1)
 
         print("start in process_events: " + start.strftime("%m/%d/%Y, %H:%M:%S"))
         print("end in process_events: " + end.strftime("%m/%d/%Y, %H:%M:%S"))
@@ -108,21 +117,34 @@ def process_events(events, isPTO):
         # Only process the event if it starts after or at the start of next week and ends before or at the end of next week
         if start >= start_of_next_week and end <= end_of_next_week:
             name = next((attendee['emailAddress']['name'] for attendee in event['attendees'] if attendee['emailAddress']['name'] != "test team"), None) # Need to replace test team with whatever group name JERA Americas_IT has
-            start = event['start']['dateTime'].split("T")[0]
-            end = event['end']['dateTime'].split("T")[0]
-            print("start: " + start)
-            print("end: " + end)
-            duration = "All day" if event['isAllDay'] else f"{start} - {end}"
-            dates = start if (event['isAllDay'] and start == end) else f"{start} - {end}"
+            
+            start_date = start.date()
+            end_date = end.date()
+            start_time = start.time()
+            end_time = end.time()
+            print("start: " + str(start_date))
+            print("end: " + str(end_date))
+            duration = "All day" if event['isAllDay'] else f"{start_time.strftime('%I:%M %p')} - {end_time.strftime('%I:%M %p')}"
+            dates = str(start_date) if start_date == end_date else f"{start_date} - {end_date}"
+            
+            # Append the data with the start date for sorting purposes
             if(isPTO): 
-                data.append([name, dates, duration])
+                data.append([name, start_date, dates, duration])
             else:
-                data.append([name, dates])
+                data.append([name, start_date, dates])
 
+    # Sort data by last name and start date
+    data.sort(key=lambda x: (get_last_name(x[0]), x[1]))
+
+    # Create DataFrame without the start date column
     if(isPTO):
-        return pd.DataFrame(data, columns=['Name', 'Date(s)', 'Duration (CST)'])
+        df = pd.DataFrame(data, columns=['Name', 'Start Date', 'Date(s)', 'Duration (CST)'])
+        df = df.drop(columns=['Start Date'])
     else:
-        return pd.DataFrame(data, columns=['Name', 'Date(s)'])
+        df = pd.DataFrame(data, columns=['Name', 'Start Date', 'Date(s)'])
+        df = df.drop(columns=['Start Date'])
+
+    return df
 
 # Parse the PTO events
 pto_df = process_events(pto_events, True)
