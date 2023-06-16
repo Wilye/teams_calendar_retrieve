@@ -106,8 +106,8 @@ def process_events(events, isPTO):
     data = []
     for event in events:
         # Convert the start and end times to datetime objects
-        start = datetime.fromisoformat(event['start']['dateTime'].split('.')[0])  # add 'Z' to indicate UTC
-        end = datetime.fromisoformat(event['end']['dateTime'].split('.')[0])  # subtract a second and add 'Z' to indicate UTC
+        start = datetime.fromisoformat(event['start']['dateTime'].split('.')[0]) 
+        end = datetime.fromisoformat(event['end']['dateTime'].split('.')[0])  
 
         # Flag
         # Correct the end time if the event ends exactly at midnight
@@ -136,7 +136,7 @@ def process_events(events, isPTO):
             else:
                 data.append([name, start_date, dates])
 
-    # Sort data by last name and start date
+    # Sort data by last name then first name and start date
     data.sort(key=lambda x: (get_names(x[0]), x[1]))
 
     # Create DataFrame without the start date column
@@ -236,3 +236,29 @@ with smtplib.SMTP('smtp.outlook.com', 587) as server:
     server.send_message(msg)
 
 print('Email sent successfully!')
+
+# Notes
+"""
+Need to test:
+- make sure names are sorted by alphabetical last name, then first name, then date
+    - so need to create a user with same last name, different first name
+    - make a user with a Z last name to see if they appear behind me
+- need to make sure that not all events with the word ' at ' are flagged as a Travel event because it's definitely possible that like an event in a different calendar has ' at ' in it's subject name
+    - so perhaps i can bring up a way of consistent formatting like prefixing each event subject with [PTO] or [Travel]
+        - so e.g. "[PTO] Shelby Yang" or "[Travel] Shelby at Houston"
+        - this way it's less likely an event that's not PTO or Travel, but has ' at ' or 'xyzPTOxyz' in the subject will not be flagged
+- if an event ends exactly at midnight, check to see if a second gets subtracted and it displays previous day
+    - the thing is, if a person wants to create an event that DOES end at 12 AM on the dot, I think it might subtract a second, and so their date no longer reflects that day but the day before
+
+Need to implement:
+- running the script weekly (Fridays at 8 AM?)
+- a no reply account with admin privileges (or get someone to grant the permissions i need) that will send out the email to the IT department
+- more security, so sensitive information like password isn't just in the source code
+
+Need to figure out:
+- if token refreshing actually means the program should never need manual authorization (since the program will run on a weekly basis, the token will be refreshed on a weekly basis? or is it after the refresh token's time runs out, manual authorization is needed again)
+    - https://stackoverflow.com/questions/51332122/access-token-refresh-token-with-msal this seems to answer
+- the list of lowest permissions needed for the program to run
+
+Useful shortcut: ^C to kill a process in the terminal
+"""
