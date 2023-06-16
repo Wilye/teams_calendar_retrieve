@@ -251,7 +251,10 @@ Need to test:
     - the thing is, if a person wants to create an event that DOES end at 12 AM on the dot, I think it might subtract a second, and so their date no longer reflects that day but the day before
 
 Need to implement:
+- integrating with JERA Americas IT
 - running the script weekly (Fridays at 8 AM?)
+    - Sayuri suggested that if not, maybe could make a GUI that someone presses to send the email out
+        - but i think it's easy enough to schedule to the program to run every week
 - a no reply account with admin privileges (or get someone to grant the permissions i need) that will send out the email to the IT department
 - more security, so sensitive information like password isn't just in the source code
 
@@ -260,5 +263,14 @@ Need to figure out:
     - https://stackoverflow.com/questions/51332122/access-token-refresh-token-with-msal this seems to answer
 - the list of lowest permissions needed for the program to run
 
+Potential workaround for fetching all calendar events: take all events from PTO-Travel and put it in a shared calendar on my Outlook, then just fetch those events
+    - Sayuri said that we don't need to separate into PTO and Travel, we could just have name of the person and the title of the event so people could interpret it on their own
+        - yeah this is probably easier since people aren't consistent with how they format the subject names, and so it's better for the user to just interpret if the subject name is a PTO or Travel
+        - if people aren't consistent, I coudl still try my thing by using like some type of "sentiment" analysis to separate by judging whether the event is PTO or Travel
+            - but this seems unneccesary at least for a task of this magnitude of impact lol
+            - https://en.wikipedia.org/wiki/Fuzzy_logic
+
 Useful shortcut: ^C to kill a process in the terminal
+
+NEED TO TALK ABOUT SECURITY!!!
 """
