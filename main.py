@@ -94,9 +94,12 @@ travel_events = [event for event in events if ' at ' in event['subject'].lower()
 pto_data = []
 travel_data = []
 
-def get_last_name(name):
-    """Extract the last name from a full name"""
-    return name.split()[-1]
+def get_names(name):
+    """Extract the first and last names from a full name and convert them to lowercase"""
+    names = name.split()
+    first_name = names[0].lower() if len(names) > 0 else ''
+    last_name = names[-1].lower() if len(names) > 1 else ''
+    return last_name, first_name
 
 # The function to process the events
 def process_events(events, isPTO):
@@ -134,7 +137,7 @@ def process_events(events, isPTO):
                 data.append([name, start_date, dates])
 
     # Sort data by last name and start date
-    data.sort(key=lambda x: (get_last_name(x[0]), x[1]))
+    data.sort(key=lambda x: (get_names(x[0]), x[1]))
 
     # Create DataFrame without the start date column
     if(isPTO):
@@ -177,7 +180,7 @@ else:
 # Define email parameters
 sender = "shelby@yangyy.onmicrosoft.com"
 receiver = "shelby@yangyy.onmicrosoft.com"
-password = "5750Jason"
+password = "5750Jason" # TODO: setup an environment variable so password is not displayed in source code
 # Define the date range for the subject
 start_date = start_of_next_week.strftime("%m/%d/%Y")
 end_date = end_of_next_week.strftime("%m/%d/%Y")
