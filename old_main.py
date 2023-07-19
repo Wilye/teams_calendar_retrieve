@@ -249,6 +249,7 @@ Need to test:
         - this way it's less likely an event that's not PTO or Travel, but has ' at ' or 'xyzPTOxyz' in the subject will not be flagged
 - if an event ends exactly at midnight, check to see if a second gets subtracted and it displays previous day
     - the thing is, if a person wants to create an event that DOES end at 12 AM on the dot, I think it might subtract a second, and so their date no longer reflects that day but the day before
+- test behavior of what happens if someone from a different time zone schedules an event
 
 Need to implement:
 - integrating with JERA Americas IT
