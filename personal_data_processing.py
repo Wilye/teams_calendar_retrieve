@@ -20,7 +20,6 @@ def get_channel_messages(access_token):
         
         response.raise_for_status()
         data = response.json()
-        print(f"Debug: data is {data}")
         all_messages.extend(data['value'])
         if '@odata.nextLink' in data:
             graph_url = data['@odata.nextLink']
@@ -30,9 +29,6 @@ def get_channel_messages(access_token):
     return all_messages
 
 def get_exchange_ids(messages, access_token):
-    with open("exchange_ids_messages.txt", "w") as outfile:
-        json.dump(messages, outfile, indent = 4)
-
     exchange_ids = []
     for message in messages:
         for attachment in message.get('attachments', []):
@@ -43,8 +39,9 @@ def get_exchange_ids(messages, access_token):
                     graph_url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/events/{exchange_id}"
 
                     event = get_event_or_none(graph_url, access_token)
-                    if(is_within_next_week(event)):
-                        exchange_ids.append(event)
+                    if event is not None:
+                        if is_within_next_week(event):
+                            exchange_ids.append(event)
     
     return exchange_ids
 
@@ -68,7 +65,9 @@ def get_calendar_events(exchange_ids, access_token):
     calendar_events = []
     for exchange_id in exchange_ids:
         graph_url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/events/{exchange_id}"
-        calendar_events.append(get_event_or_none(graph_url, access_token))
+        event = get_event_or_none(graph_url, access_token)
+        if event is not None:
+            calendar_events.append(event)
     return calendar_events
 
 

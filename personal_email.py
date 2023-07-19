@@ -35,11 +35,11 @@ body = f"""
 
 def get_teams_members_emails(access_token):
     teams_members_graph_url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/members"
-    response_teams_members = requests.get(teams_members_graph_url, headers=headers)
     headers = {
             'Authorization': f'Bearer {access_token}',
             'Prefer': 'outlook.timezone="Central Standard Time"'
-    }   
+    }  
+    response_teams_members = requests.get(teams_members_graph_url, headers=headers) 
     members = response_teams_members.json()['value']
     
     emails = []
