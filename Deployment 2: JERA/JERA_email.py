@@ -79,30 +79,10 @@ def send_email(access_token, recipients, subject, html_body):
             "contentType": "HTML",
             "content": html_body
         },
-        "toRecipients": [
-            {
-                "emailAddress": {
-                    "address": "Shelby.Yang_intern@jeraamericas.com"
-                }
-            }
-        ]
+        "toRecipients": recipients
     },
     "saveToSentItems": "true"
     }
-    
-    """
-    email_body = {
-        "message": {
-            "subject": subject,
-            "body": {
-                "contentType": "HTML",
-                "content": html_body
-            },
-            "toRecipients": recipients
-        },
-        "saveToSentItems": "true"
-    }
-    """
 
     # Send the email
     response = requests.post(url, headers=headers, json=email_body)
